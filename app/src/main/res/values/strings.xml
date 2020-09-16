@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PicturePalette</string>
+    <string name="picture_ContentDescription">picture</string>
+    <string name="camera_contentDescription">take picture</string>
 </resources>
