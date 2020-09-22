@@ -9,7 +9,7 @@
     <ImageView
         android:id="@+id/photo_ImageView"
         android:layout_width="0dp"
-        android:layout_height="350dp"
+        android:layout_height="300dp"
         android:layout_marginTop="8dp"
         android:background="#00FFFFFF"
         android:contentDescription="@string/picture_ContentDescription"
@@ -17,7 +17,7 @@
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/select_image_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_launcher_background" />
@@ -27,24 +27,24 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/camera_contentDescription"
         app:layout_constraintEnd_toStartOf="@+id/select_image_button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/photo_ImageView"
-        app:srcCompat="@android:drawable/ic_menu_camera"
-        android:contentDescription="@string/camera_contentDescription" />
+        app:srcCompat="@android:drawable/ic_menu_camera" />
 
     <ImageButton
         android:id="@+id/select_image_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/select_an_image_contentDescription"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/camera_button"
         app:layout_constraintTop_toBottomOf="@+id/photo_ImageView"
-        app:srcCompat="@android:drawable/ic_menu_gallery"
-        android:contentDescription="@string/select_an_image_contentDescription" />
+        app:srcCompat="@android:drawable/ic_menu_gallery" />
 
     <TextView
         android:id="@+id/colorPaletteTitle_text"
@@ -53,44 +53,43 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:text="@string/color_palette_text"
-        app:layout_constraintBottom_toTopOf="@+id/recyclerView3"
+        app:layout_constraintBottom_toTopOf="@+id/colorPalette_recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/select_image_button" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView3"
+        android:id="@+id/colorPalette_recycler_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:scrollbars="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/colorPaletteTitle_text"
         tools:itemCount="5" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/colorImage_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:text="@string/image_sample_text"
-        app:layout_constraintBottom_toTopOf="@+id/recyclerView4"
+        app:layout_constraintBottom_toTopOf="@+id/colorImage_recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView3" />
+        app:layout_constraintTop_toBottomOf="@+id/colorPalette_recycler_view"
+        app:layout_constraintVertical_bias="1.0" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView4"
+        android:id="@+id/colorImage_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="1dp"
-        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/colorImage_text"
         app:layout_constraintVertical_bias="0.0"
         tools:itemCount="5" />
 
