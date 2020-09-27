@@ -1,36 +1,40 @@
 package com.example.picturepalette
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.ColorSpace
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.graphics.convertTo
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.IOException
-import java.text.DateFormat.getDateInstance
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 const val REQUEST_TAKE_PHOTO = 1
+const val REQUEST_PERMISSION = 2
+const val RESULT_LOAD_IMAGE = 3
 
 class MainActivity : AppCompatActivity() {
     private lateinit var colorPaletteRecyclerView: RecyclerView
@@ -61,13 +65,17 @@ class MainActivity : AppCompatActivity() {
         colorPaletteAdapter = ColorPaletteAdapter(colorPaletteListViewModel.colorList)
         colorImageAdapter = ColorImageAdapter(colorImageListViewModel.colorList)
 
-        colorPaletteRecyclerView.layoutManager = LinearLayoutManager(this,
+        colorPaletteRecyclerView.layoutManager = LinearLayoutManager(
+            this,
             LinearLayoutManager.HORIZONTAL,
-            false)
+            false
+        )
 
-        colorImageRecyclerView.layoutManager = LinearLayoutManager(this,
+        colorImageRecyclerView.layoutManager = LinearLayoutManager(
+            this,
             LinearLayoutManager.HORIZONTAL,
-            false)
+            false
+        )
 
         colorPaletteRecyclerView.adapter = colorPaletteAdapter
         colorImageRecyclerView.adapter = colorImageAdapter
@@ -75,6 +83,17 @@ class MainActivity : AppCompatActivity() {
         cameraButton.setOnClickListener {
             dispatchTakePictureIntent()
         }
+
+        galleryButton.setOnClickListener() {
+            val intent = Intent(
+                Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            )
+
+            startActivityForResult(intent, RESULT_LOAD_IMAGE)
+        }
+
+        requestPermissions()
     }
 
     private fun dispatchTakePictureIntent() {
@@ -114,12 +133,99 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun createColorBucket(bitmap: Bitmap): List<Pair<Int,Int>> {
+        var colorBucket = mutableMapOf<Int, Int>()
+        for (x in 0 until bitmap.width) {
+            for(y in 0 until bitmap.height) {
+                val color = bitmap.getPixel(x, y)
+                colorBucket.merge(color,1, Int::plus)
+            }
+        }
+
+        return colorBucket.toList().sortedBy { (_, value) -> value }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             val imageBitmap =
-                photoFile?.path?.let { getScaledBitmap(it, photo_ImageView.width, photo_ImageView.height) }
+                photoFile?.path?.let { getScaledBitmap(
+                    it,
+                    photo_ImageView.width,
+                    photo_ImageView.height
+                ) }
             photo_ImageView.setImageBitmap(imageBitmap)
+            if (imageBitmap != null) {
+                saveImage(imageBitmap)
+                val colorBucket = createColorBucket(imageBitmap)
+                colorImageListViewModel.colorList[0] = Color.valueOf(colorBucket[0].first)
+                colorImageListViewModel.colorList[1] = Color.valueOf(colorBucket[1].first)
+                colorImageListViewModel.colorList[2] = Color.valueOf(colorBucket[2].first)
+                colorImageListViewModel.colorList[3] = Color.valueOf(colorBucket[3].first)
+                colorImageListViewModel.colorList[4] = Color.valueOf(colorBucket[4].first)
+                updateUI()
+            }
+        }
+
+        if(requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            val selectedImageUri = data.data
+            photo_ImageView.setImageURI(selectedImageUri)
+        }
+    }
+
+    private fun saveImage(bitmap: Bitmap) {
+        val relativeLocation = Environment.DIRECTORY_PICTURES + File.pathSeparator + "PicturePalette"
+        val contentValue = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis().toString())
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, relativeLocation)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+
+        val resolver = this.contentResolver
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValue)
+
+        try {
+            uri?.let { uri ->
+                val stream = resolver.openOutputStream(uri)
+                stream?.let { stream ->
+                    if(!bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)) {
+                        throw IOException("failed to saved bitmap")
+                    }
+                } ?: throw IOException("failed to get output stream")
+            } ?: throw IOException("failed to create new MediaStore record")
+        } catch (e: IOException) {
+            if(uri != null) {
+                resolver.delete(uri, null, null)
+            }
+            throw IOException(e)
+        } finally {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValue.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            }
+        }
+    }
+
+    private fun updateUI() {
+        colorImageAdapter = ColorImageAdapter(colorPaletteListViewModel.colorList)
+    }
+
+    private fun requestPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    REQUEST_PERMISSION
+                );
+                return;
         }
     }
 
@@ -152,7 +258,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     private inner class ColorImageAdapter(var colors: List<Color>)
         : RecyclerView.Adapter<ColorImageHolder>() {
 
@@ -177,7 +282,6 @@ class MainActivity : AppCompatActivity() {
 
     private inner class ColorImageHolder(view: View):
         RecyclerView.ViewHolder(view){
-
         val button: Button = itemView.findViewById(R.id.colorImageButton)
     }
 }
