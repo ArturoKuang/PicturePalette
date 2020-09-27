@@ -211,7 +211,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        colorImageAdapter = ColorImageAdapter(colorPaletteListViewModel.colorList)
+        val imageColors = colorImageListViewModel.colorList
+        colorImageAdapter = ColorImageAdapter(imageColors)
+        colorImageRecyclerView.adapter = colorImageAdapter
     }
 
     private fun requestPermissions() {
