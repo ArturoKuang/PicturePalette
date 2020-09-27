@@ -30,6 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.sqrt
 
 
 const val REQUEST_TAKE_PHOTO = 1
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var colorImageAdapter: ColorImageAdapter
     private lateinit var currentPhotoPath: String
     private lateinit var photoURI: Uri
+    private val random = Random()
     private var photoFile: File? = null
 
     private val colorImageListViewModel: ColorImageListViewModel by lazy {
@@ -146,7 +148,6 @@ class MainActivity : AppCompatActivity() {
         return colorBucket.toList().sortedBy { (_, value) -> value }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
@@ -160,12 +161,13 @@ class MainActivity : AppCompatActivity() {
             if (imageBitmap != null) {
                 saveImage(imageBitmap)
                 val colorBucket = createColorBucket(imageBitmap)
-                colorImageListViewModel.colorList[0] = Color.valueOf(colorBucket[0].first)
-                colorImageListViewModel.colorList[1] = Color.valueOf(colorBucket[1].first)
-                colorImageListViewModel.colorList[2] = Color.valueOf(colorBucket[2].first)
-                colorImageListViewModel.colorList[3] = Color.valueOf(colorBucket[3].first)
-                colorImageListViewModel.colorList[4] = Color.valueOf(colorBucket[4].first)
+                for(i in 0..4) {
+                    colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
+                }
                 updateUI()
+
+
+
             }
         }
 
@@ -173,6 +175,13 @@ class MainActivity : AppCompatActivity() {
             val selectedImageUri = data.data
             photo_ImageView.setImageURI(selectedImageUri)
         }
+    }
+
+    private fun sampleFromColorScheme(color1: Int, color2: Int, color3: Int): Color {
+        val r1 = random.nextFloat()
+        val r2 = random.nextFloat()
+        val color = (1 - sqrt(r1) * color1) + (sqrt(r1) * (1 - r2) * color2) + (r2* sqrt(r1) * color3)
+        return Color.valueOf(color.toInt())
     }
 
     private fun saveImage(bitmap: Bitmap) {
