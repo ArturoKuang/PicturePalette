@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var colorImageRecyclerView: RecyclerView
     private lateinit var cameraButton: ImageButton
     private lateinit var galleryButton: ImageButton
+    private lateinit var refreshButton: ImageButton
     private lateinit var colorPaletteAdapter: ColorPaletteAdapter
     private lateinit var colorImageAdapter: ColorImageAdapter
     private lateinit var currentPhotoPath: String
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         colorImageRecyclerView = findViewById(R.id.colorImage_recycler_view)
         cameraButton = findViewById(R.id.camera_button)
         galleryButton = findViewById(R.id.select_image_button)
+        refreshButton = findViewById(R.id.refresh_button)
         colorPaletteAdapter = ColorPaletteAdapter(colorPaletteListViewModel.colorList)
         colorImageAdapter = ColorImageAdapter(colorImageListViewModel.colorList)
 
@@ -93,8 +95,11 @@ class MainActivity : AppCompatActivity() {
                 Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
             )
-
             startActivityForResult(intent, RESULT_LOAD_IMAGE)
+        }
+
+        refreshButton.setOnClickListener() {
+            createColorPaletteFromImageView()
         }
 
         requestPermissions()
@@ -174,10 +179,14 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             val selectedImageUri = data.data
             photo_ImageView.setImageURI(selectedImageUri)
-            val bitmap = photo_ImageView.drawable.toBitmap()
-            getColorsFromImage(bitmap)
-            updateUI()
+            createColorPaletteFromImageView()
         }
+    }
+
+    private fun createColorPaletteFromImageView() {
+        val bitmap = photo_ImageView.drawable.toBitmap()
+        getColorsFromImage(bitmap)
+        updateUI()
     }
     
     private fun getColorsFromImage(bitmap: Bitmap) {
@@ -248,19 +257,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_PERMISSION
-                );
-                return;
-            }
+        ActivityCompat.requestPermissions(
+            this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            REQUEST_PERMISSION)
     }
 
     private inner class ColorPaletteAdapter(var colors: List<Color>) :

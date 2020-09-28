@@ -5,4 +5,5 @@
     <string name="select_an_image_contentDescription">select an image</string>
     <string name="color_palette_text">Generated Color Palette: </string>
     <string name="image_sample_text">Color from Image: </string>
+    <string name="refreshButton_content_description">refresh button</string>
 </resources>

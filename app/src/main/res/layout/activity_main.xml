@@ -26,9 +26,9 @@
         android:id="@+id/camera_button"
         android:layout_width="0dp"
         android:layout_height="55dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:contentDescription="@string/camera_contentDescription"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/refresh_button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/photo_ImageView"
@@ -38,12 +38,11 @@
         android:id="@+id/select_image_button"
         android:layout_width="0dp"
         android:layout_height="55dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:contentDescription="@string/select_an_image_contentDescription"
-        app:layout_constraintBottom_toTopOf="@+id/colorPaletteTitle_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/imageButton"
+        app:layout_constraintStart_toEndOf="@+id/refresh_button"
         app:layout_constraintTop_toBottomOf="@+id/photo_ImageView"
         app:srcCompat="@android:drawable/ic_menu_gallery" />
 
@@ -95,10 +94,11 @@
         tools:itemCount="5" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/refresh_button"
         android:layout_width="0dp"
         android:layout_height="55dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/refreshButton_content_description"
         app:layout_constraintEnd_toStartOf="@+id/select_image_button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/camera_button"
