@@ -3,7 +3,7 @@ package com.example.picturepalette
 import android.graphics.Color
 import java.util.*
 
-class Sample constructor(
+class Palette constructor(
     private val colors: IntArray
 ) {
     var hsvColors = mutableListOf<FloatArray>()

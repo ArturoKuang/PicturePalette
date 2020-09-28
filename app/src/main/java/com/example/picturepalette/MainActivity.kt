@@ -4,10 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.ColorSpace
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,7 +19,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
@@ -32,7 +29,6 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.sqrt
 
 
 const val REQUEST_TAKE_PHOTO = 1
@@ -195,7 +191,7 @@ class MainActivity : AppCompatActivity() {
             colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
         }
 
-        val sample = Sample(
+        val sample = Palette(
             intArrayOf(
                 colorBucket[0].first,
                 colorBucket[1].first,
