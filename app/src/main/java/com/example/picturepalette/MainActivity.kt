@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -161,19 +162,7 @@ class MainActivity : AppCompatActivity() {
             photo_ImageView.setImageBitmap(imageBitmap)
             if (imageBitmap != null) {
                 saveImage(imageBitmap)
-                val colorBucket = createColorBucket(imageBitmap)
-                for(i in 0..4) {
-                    colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
-                }
-
-                for(i in 0..4) {
-                    colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
-                        colorBucket[i].first,
-                        colorBucket[i + 1].first,
-                        colorBucket[i + 2].first
-                    )
-                }
-
+                getColorsFromImage(imageBitmap)
                 updateUI()
 
             }
@@ -182,6 +171,25 @@ class MainActivity : AppCompatActivity() {
         if(requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             val selectedImageUri = data.data
             photo_ImageView.setImageURI(selectedImageUri)
+            val bitmap = photo_ImageView.drawable.toBitmap()
+            getColorsFromImage(bitmap)
+            updateUI()
+        }
+    }
+
+
+    private fun getColorsFromImage(bitmap: Bitmap) {
+        val colorBucket = createColorBucket(bitmap)
+        for(i in 0..4) {
+            colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
+        }
+
+        for(i in 0..4) {
+            colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
+                colorBucket[i].first,
+                colorBucket[i + 1].first,
+                colorBucket[i + 2].first
+            )
         }
     }
 
