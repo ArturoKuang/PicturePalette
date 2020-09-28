@@ -4,16 +4,20 @@ import android.graphics.Color
 import java.util.*
 
 class Sample constructor(
-    val colors: IntArray
+    private val colors: IntArray
 ) {
     var hsvColors = mutableListOf<FloatArray>()
     var sampleColors = mutableListOf<Color>()
     private val random = Random()
 
+    init {
+        convertToHSV()
+    }
+
     private fun convertToHSV() {
         for (color in colors) {
             var hsv = FloatArray(3)
-            Color.HSVToColor(color, hsv)
+            Color.colorToHSV(color, hsv)
             hsvColors.add(hsv)
         }
     }
@@ -30,7 +34,7 @@ class Sample constructor(
         return (a * (1 - f)) + (b * f)
     }
 
-    public fun generateColor(): Color {
+    fun generateColor(): Color {
         var colorResult = hsvColors[0]
         for(i in 1 until hsvColors.size) {
             colorResult = lerp(colorResult, hsvColors[i], random.nextFloat())
@@ -40,7 +44,7 @@ class Sample constructor(
     }
 
 
-    public fun generateColors(): List<Color> {
+    fun generateColors(): List<Color> {
         var colorsResult = mutableListOf<Color>()
         for (i in 0..5) {
             colorsResult.add(generateColor())

@@ -187,23 +187,18 @@ class MainActivity : AppCompatActivity() {
             colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
         }
 
-        for (i in 0..4) {
-//            colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
-//                colorBucket[i].first,
-//                colorBucket[i + 1].first,
-//                colorBucket[i + 2].first
-//            )
-
-
-            val sample = Sample(
-                intArrayOf(
-                    colorBucket[0].first,
-                    colorBucket[1].first,
-                    colorBucket[2].first,
-                    colorBucket[3].first,
-                    colorBucket[4].first
-                )
+        val sample = Sample(
+            intArrayOf(
+                colorBucket[0].first,
+                colorBucket[1].first,
+                colorBucket[2].first,
+                colorBucket[3].first,
+                colorBucket[4].first
             )
+        )
+
+        for (i in 0..4) {
+            colorPaletteListViewModel.colorList[i] = sample.generateColor()
         }
     }
 
