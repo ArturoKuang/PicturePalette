@@ -7,9 +7,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.ColorSpace
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -19,6 +19,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -136,12 +137,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun createColorBucket(bitmap: Bitmap): List<Pair<Int,Int>> {
+    private fun createColorBucket(bitmap: Bitmap): List<Pair<Int, Int>> {
         var colorBucket = mutableMapOf<Int, Int>()
         for (x in 0 until bitmap.width) {
             for(y in 0 until bitmap.height) {
                 val color = bitmap.getPixel(x, y)
-                colorBucket.merge(color,1, Int::plus)
+                colorBucket.merge(color, 1, Int::plus)
             }
         }
 
@@ -164,9 +165,16 @@ class MainActivity : AppCompatActivity() {
                 for(i in 0..4) {
                     colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
                 }
+
+                for(i in 0..4) {
+                    colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
+                        colorBucket[i].first,
+                        colorBucket[i + 1].first,
+                        colorBucket[i + 2].first
+                    )
+                }
+
                 updateUI()
-
-
 
             }
         }
@@ -180,8 +188,23 @@ class MainActivity : AppCompatActivity() {
     private fun sampleFromColorScheme(color1: Int, color2: Int, color3: Int): Color {
         val r1 = random.nextFloat()
         val r2 = random.nextFloat()
-        val color = (1 - sqrt(r1) * color1) + (sqrt(r1) * (1 - r2) * color2) + (r2* sqrt(r1) * color3)
-        return Color.valueOf(color.toInt())
+        var hsva = FloatArray(3)
+        var hsvb = FloatArray(3)
+        var hsvc = FloatArray(3)
+
+        Color.colorToHSV(color1, hsva)
+        Color.colorToHSV(color2, hsvb)
+        Color.colorToHSV(color3, hsvc)
+
+        hsva.map { it * 1 - sqrt(r1) }
+        hsvb.map { it * sqrt(r1) * (1 - r2) }
+        hsvc.map { it * r2 * sqrt(r1) }
+
+        for ((index, value) in hsva.withIndex()) {
+            hsva[index] = hsvb[index] + hsvc[index]
+        }
+
+        return Color.valueOf(Color.HSVToColor(hsva))
     }
 
     private fun saveImage(bitmap: Bitmap) {
@@ -223,6 +246,10 @@ class MainActivity : AppCompatActivity() {
         val imageColors = colorImageListViewModel.colorList
         colorImageAdapter = ColorImageAdapter(imageColors)
         colorImageRecyclerView.adapter = colorImageAdapter
+
+        val paletteColors = colorPaletteListViewModel.colorList
+        colorPaletteAdapter = ColorPaletteAdapter(paletteColors)
+        colorPaletteRecyclerView.adapter = colorPaletteAdapter
     }
 
     private fun requestPermissions() {
