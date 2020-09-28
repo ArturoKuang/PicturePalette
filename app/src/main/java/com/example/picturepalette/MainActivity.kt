@@ -106,7 +106,8 @@ class MainActivity : AppCompatActivity() {
                 photoFile = try {
                     createImageFile()
                 } catch (ex: IOException) {
-                    Toast.makeText(this, "PHOTO FILE COULD NOT BE CREATED", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "PHOTO FILE COULD NOT BE CREATED", Toast.LENGTH_LONG)
+                        .show()
                     null
                 }
 
@@ -141,7 +142,7 @@ class MainActivity : AppCompatActivity() {
     private fun createColorBucket(bitmap: Bitmap): List<Pair<Int, Int>> {
         var colorBucket = mutableMapOf<Int, Int>()
         for (x in 0 until bitmap.width) {
-            for(y in 0 until bitmap.height) {
+            for (y in 0 until bitmap.height) {
                 val color = bitmap.getPixel(x, y)
                 colorBucket.merge(color, 1, Int::plus)
             }
@@ -152,13 +153,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             val imageBitmap =
-                photoFile?.path?.let { getScaledBitmap(
-                    it,
-                    photo_ImageView.width,
-                    photo_ImageView.height
-                ) }
+                photoFile?.path?.let {
+                    getScaledBitmap(
+                        it,
+                        photo_ImageView.width,
+                        photo_ImageView.height
+                    )
+                }
             photo_ImageView.setImageBitmap(imageBitmap)
             if (imageBitmap != null) {
                 saveImage(imageBitmap)
@@ -168,7 +171,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if(requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             val selectedImageUri = data.data
             photo_ImageView.setImageURI(selectedImageUri)
             val bitmap = photo_ImageView.drawable.toBitmap()
@@ -180,15 +183,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun getColorsFromImage(bitmap: Bitmap) {
         val colorBucket = createColorBucket(bitmap)
-        for(i in 0..4) {
+        for (i in 0..4) {
             colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
         }
 
-        for(i in 0..4) {
-            colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
-                colorBucket[i].first,
-                colorBucket[i + 1].first,
-                colorBucket[i + 2].first
+        for (i in 0..4) {
+//            colorPaletteListViewModel.colorList[i] = sampleFromColorScheme(
+//                colorBucket[i].first,
+//                colorBucket[i + 1].first,
+//                colorBucket[i + 2].first
+//            )
+
+
+            val sample = Sample(
+                intArrayOf(
+                    colorBucket[0].first,
+                    colorBucket[1].first,
+                    colorBucket[2].first,
+                    colorBucket[3].first,
+                    colorBucket[4].first
+                )
             )
         }
     }
@@ -216,7 +230,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveImage(bitmap: Bitmap) {
-        val relativeLocation = Environment.DIRECTORY_PICTURES + File.pathSeparator + "PicturePalette"
+        val relativeLocation =
+            Environment.DIRECTORY_PICTURES + File.pathSeparator + "PicturePalette"
         val contentValue = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis().toString())
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -233,18 +248,18 @@ class MainActivity : AppCompatActivity() {
             uri?.let { uri ->
                 val stream = resolver.openOutputStream(uri)
                 stream?.let { stream ->
-                    if(!bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)) {
+                    if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)) {
                         throw IOException("failed to saved bitmap")
                     }
                 } ?: throw IOException("failed to get output stream")
             } ?: throw IOException("failed to create new MediaStore record")
         } catch (e: IOException) {
-            if(uri != null) {
+            if (uri != null) {
                 resolver.delete(uri, null, null)
             }
             throw IOException(e)
         } finally {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 contentValue.put(MediaStore.MediaColumns.IS_PENDING, 0)
             }
         }
@@ -261,22 +276,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissions() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED) {
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     REQUEST_PERMISSION
                 );
                 return;
-        }
+            }
     }
 
-    private inner class ColorPaletteAdapter(var colors: List<Color>)
-        : RecyclerView.Adapter<ColorPaletteHolder>() {
+    private inner class ColorPaletteAdapter(var colors: List<Color>) :
+        RecyclerView.Adapter<ColorPaletteHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorPaletteHolder {
             val view = layoutInflater.inflate(R.layout.color_palette_list_item, parent, false)
@@ -290,22 +306,22 @@ class MainActivity : AppCompatActivity() {
             var color = colors[position]
             holder.apply {
                 button.setBackgroundColor(color.toArgb())
-                val colorValue =  Color.rgb(color.red(), color.green(), color.blue())
-                val colorString = "#"+Integer.toHexString(colorValue)
+                val colorValue = Color.rgb(color.red(), color.green(), color.blue())
+                val colorString = "#" + Integer.toHexString(colorValue)
                 button.text = colorString
             }
         }
     }
 
-    private inner class ColorPaletteHolder(view: View):
-            RecyclerView.ViewHolder(view){
+    private inner class ColorPaletteHolder(view: View) :
+        RecyclerView.ViewHolder(view) {
 
         val button: Button = itemView.findViewById(R.id.colorPaletteButton)
     }
 
 
-    private inner class ColorImageAdapter(var colors: List<Color>)
-        : RecyclerView.Adapter<ColorImageHolder>() {
+    private inner class ColorImageAdapter(var colors: List<Color>) :
+        RecyclerView.Adapter<ColorImageHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorImageHolder {
             val view = layoutInflater.inflate(R.layout.color_image_list_item, parent, false)
@@ -319,15 +335,15 @@ class MainActivity : AppCompatActivity() {
             var color = colors[position]
             holder.apply {
                 button.setBackgroundColor(color.toArgb())
-                val colorValue =  Color.rgb(color.red(), color.green(), color.blue())
-                val colorString = "#"+Integer.toHexString(colorValue)
+                val colorValue = Color.rgb(color.red(), color.green(), color.blue())
+                val colorString = "#" + Integer.toHexString(colorValue)
                 button.text = colorString
             }
         }
     }
 
-    private inner class ColorImageHolder(view: View):
-        RecyclerView.ViewHolder(view){
+    private inner class ColorImageHolder(view: View) :
+        RecyclerView.ViewHolder(view) {
         val button: Button = itemView.findViewById(R.id.colorImageButton)
     }
 }
