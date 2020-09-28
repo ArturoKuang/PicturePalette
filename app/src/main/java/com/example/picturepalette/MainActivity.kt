@@ -179,8 +179,7 @@ class MainActivity : AppCompatActivity() {
             updateUI()
         }
     }
-
-
+    
     private fun getColorsFromImage(bitmap: Bitmap) {
         val colorBucket = createColorBucket(bitmap)
         for (i in 0..4) {
@@ -200,28 +199,6 @@ class MainActivity : AppCompatActivity() {
         for (i in 0..4) {
             colorPaletteListViewModel.colorList[i] = sample.generateColor()
         }
-    }
-
-    private fun sampleFromColorScheme(color1: Int, color2: Int, color3: Int): Color {
-        val r1 = random.nextFloat()
-        val r2 = random.nextFloat()
-        var hsva = FloatArray(3)
-        var hsvb = FloatArray(3)
-        var hsvc = FloatArray(3)
-
-        Color.colorToHSV(color1, hsva)
-        Color.colorToHSV(color2, hsvb)
-        Color.colorToHSV(color3, hsvc)
-
-        hsva.map { it * 1 - sqrt(r1) }
-        hsvb.map { it * sqrt(r1) * (1 - r2) }
-        hsvc.map { it * r2 * sqrt(r1) }
-
-        for ((index, value) in hsva.withIndex()) {
-            hsva[index] = hsvb[index] + hsvc[index]
-        }
-
-        return Color.valueOf(Color.HSVToColor(hsva))
     }
 
     private fun saveImage(bitmap: Bitmap) {

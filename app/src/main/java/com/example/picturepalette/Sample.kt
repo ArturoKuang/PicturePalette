@@ -44,9 +44,9 @@ class Sample constructor(
     }
 
 
-    fun generateColors(): List<Color> {
+    fun generateColors(numColors: Int): List<Color> {
         var colorsResult = mutableListOf<Color>()
-        for (i in 0..5) {
+        for (i in 0..numColors) {
             colorsResult.add(generateColor())
         }
         return colorsResult
