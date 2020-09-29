@@ -8,13 +8,9 @@ class ColorExtractor(
     private val maxIteration: Int,
     private val numOfColors: Int
 ) {
-    private var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
+
     private val random = Random()
     private var centroids = listOf<Centroid>()
-
-    init {
-        centroids = randomCentroids()
-    }
 
     private class Centroid() {
         var coordinates = FloatArray(3)
@@ -49,8 +45,8 @@ class ColorExtractor(
         return centroid
     }
 
-    private fun assignToCluster() {
-        for(color in colors) {
+    private fun assignToCluster(clusters: MutableMap<Centroid, MutableList<FloatArray>>) {
+        for (color in colors) {
             val centroid = nearestCentroid(color)
             if (centroid != null) {
                 val clusterColors = clusters.getOrPut(centroid) {
@@ -66,7 +62,7 @@ class ColorExtractor(
         var nearest: Centroid? = null
         var minDistance: Double = Double.MAX_VALUE
 
-        for(centroid in centroids) {
+        for (centroid in centroids) {
             val currentDistance = distance(color, centroid.coordinates)
             if (currentDistance < minDistance) {
                 nearest = centroid
@@ -89,8 +85,25 @@ class ColorExtractor(
         return (b - a) * (b - a)
     }
 
-    private fun average(): Centroid {
+    private fun average(
+        centroid: Centroid,
+        clusters: MutableMap<Centroid, MutableList<FloatArray>>
+    ): Centroid? {
+        val colors: MutableList<FloatArray> = clusters[centroid] ?: return null
+        var average = FloatArray(3)
+        for (color in colors) {
+            for(i in color.indices) {
+                average[i] += color[i]
+            }
+        }
 
+        for(i in average.indices) {
+            average[i] = average[i] / colors.size
+        }
+
+        val newCentroid = Centroid()
+        newCentroid.coordinates = average
+        return newCentroid
     }
 
     private fun relocateCentroid(): List<Centroid> {
@@ -98,8 +111,13 @@ class ColorExtractor(
     }
 
     fun extract(): List<Color> {
-        val centroids = randomCentroids()
-        assignToCluster()
+        var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
+        var lastCluster = mutableMapOf<Centroid, MutableList<FloatArray>>()
+
+        centroids = randomCentroids()
+        assignToCluster(clusters)
+        average(centroids.first(), clusters)
+
         return listOf(Color())
     }
 }
