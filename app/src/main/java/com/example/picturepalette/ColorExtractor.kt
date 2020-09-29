@@ -10,13 +10,13 @@ class ColorExtractor(
 ) {
 
     private val random = Random()
-    private var centroids = listOf<Centroid>()
+    private var centroids = mutableListOf<Centroid>()
 
     private class Centroid() {
         var coordinates = FloatArray(3)
     }
 
-    private fun randomCentroids(): List<Centroid> {
+    private fun randomCentroids(): MutableList<Centroid> {
         val max = colors.maxByOrNull {
             it.sum()
         }
@@ -92,12 +92,12 @@ class ColorExtractor(
         val colors: MutableList<FloatArray> = clusters[centroid] ?: return null
         var average = FloatArray(3)
         for (color in colors) {
-            for(i in color.indices) {
+            for (i in color.indices) {
                 average[i] += color[i]
             }
         }
 
-        for(i in average.indices) {
+        for (i in average.indices) {
             average[i] = average[i] / colors.size
         }
 
@@ -106,17 +106,21 @@ class ColorExtractor(
         return newCentroid
     }
 
-    private fun relocateCentroid(): List<Centroid> {
-
+    private fun relocateCentroid(clusters: MutableMap<Centroid, MutableList<FloatArray>>) {
+        for ((index, value) in centroids.withIndex()) {
+            val newCentroid: Centroid? = average(value, clusters)
+            if (newCentroid != null) {
+                centroids[index] = newCentroid
+            }
+        }
     }
 
     fun extract(): List<Color> {
         var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
         var lastCluster = mutableMapOf<Centroid, MutableList<FloatArray>>()
-
         centroids = randomCentroids()
-        assignToCluster(clusters)
-        average(centroids.first(), clusters)
+
+
 
         return listOf(Color())
     }
