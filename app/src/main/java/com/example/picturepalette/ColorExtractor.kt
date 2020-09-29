@@ -1,7 +1,6 @@
 package com.example.picturepalette
 
 import android.graphics.Color
-import android.util.Log
 import java.util.*
 
 class ColorExtractor(
@@ -9,23 +8,16 @@ class ColorExtractor(
     private val maxIteration: Int,
     private val numOfColors: Int
 ) {
-    private var cluster = mutableMapOf<FloatArray, FloatArray>()
+    private var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
     private val random = Random()
+    private var centroids = listOf<Centroid>()
+
+    init {
+        centroids = randomCentroids()
+    }
 
     private class Centroid() {
         var coordinates = FloatArray(3)
-    }
-
-    private fun distance(colorA: FloatArray, colorB: FloatArray): Double {
-        var sum: Double = 0.0
-        for ((index, value) in colorA.withIndex()) {
-            sum += diffSq(colorA[index], colorB[index])
-        }
-        return sum
-    }
-
-    private fun diffSq(a: Float, b: Float): Float {
-        return (b - a) * (b - a)
     }
 
     private fun randomCentroids(): List<Centroid> {
@@ -57,24 +49,57 @@ class ColorExtractor(
         return centroid
     }
 
-    //    private fun nearestCenter(): Centroid {
-//
-//    }
-//
-//    private fun assignToCluster() {
-//
-//    }
-//
-//    private fun average(): Centroid {
-//
-//    }
-//
-//    private fun relocateCentroid(): List<Centroid> {
-//
-//    }
-//
+    private fun assignToCluster() {
+        for(color in colors) {
+            val centroid = nearestCentroid(color)
+            if (centroid != null) {
+                val clusterColors = clusters.getOrPut(centroid) {
+                    mutableListOf<FloatArray>()
+                }
+                clusterColors.add(color)
+                clusters[centroid] = clusterColors
+            }
+        }
+    }
+
+    private fun nearestCentroid(color: FloatArray): Centroid? {
+        var nearest: Centroid? = null
+        var minDistance: Double = Double.MAX_VALUE
+
+        for(centroid in centroids) {
+            val currentDistance = distance(color, centroid.coordinates)
+            if (currentDistance < minDistance) {
+                nearest = centroid
+                minDistance = currentDistance
+            }
+        }
+
+        return nearest
+    }
+
+    private fun distance(colorA: FloatArray, colorB: FloatArray): Double {
+        var sum: Double = 0.0
+        for ((index, value) in colorA.withIndex()) {
+            sum += diffSq(colorA[index], colorB[index])
+        }
+        return sum
+    }
+
+    private fun diffSq(a: Float, b: Float): Float {
+        return (b - a) * (b - a)
+    }
+
+    private fun average(): Centroid {
+
+    }
+
+    private fun relocateCentroid(): List<Centroid> {
+
+    }
+
     fun extract(): List<Color> {
         val centroids = randomCentroids()
+        assignToCluster()
         return listOf(Color())
     }
 }
