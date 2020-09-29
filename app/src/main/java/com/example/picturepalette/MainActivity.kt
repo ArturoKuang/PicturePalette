@@ -34,6 +34,7 @@ import java.util.*
 const val REQUEST_TAKE_PHOTO = 1
 const val REQUEST_PERMISSION = 2
 const val RESULT_LOAD_IMAGE = 3
+const val KEY_PHOTO_URI = "photoUri"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var colorPaletteRecyclerView: RecyclerView
@@ -44,8 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var colorPaletteAdapter: ColorPaletteAdapter
     private lateinit var colorImageAdapter: ColorImageAdapter
     private lateinit var currentPhotoPath: String
-    private lateinit var photoURI: Uri
-    private val random = Random()
+    private var photoURI: Uri? = null
     private var photoFile: File? = null
 
     private val colorImageListViewModel: ColorImageListViewModel by lazy {
@@ -66,6 +66,20 @@ class MainActivity : AppCompatActivity() {
         setGalleryButton()
         setRefreshButton()
         requestPermissions()
+
+        if(savedInstanceState != null) {
+            photoURI = Uri.parse(savedInstanceState.getString(KEY_PHOTO_URI))
+            if(photoURI != null) {
+                photo_ImageView.setImageURI(photoURI)
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if(photoURI != null) {
+            outState.putString(KEY_PHOTO_URI, photoURI.toString())
+        }
     }
 
     private fun setColorPaletteRecycleView() {
@@ -186,7 +200,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            setPhotoImageViewWithUri(data.data)
+            this.photoURI = data.data!!
+            setPhotoImageViewWithUri(photoURI)
             val bitmap = photo_ImageView.drawable.toBitmap()
             updateRecycleViewColors(bitmap)
         }
