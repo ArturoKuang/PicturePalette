@@ -95,7 +95,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshButton.setOnClickListener() {
-            createColorPaletteFromImageView()
+            generatePalette()
+            updateUI()
         }
 
         requestPermissions()
@@ -139,15 +140,67 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            val bitmap =
+                photoFile?.path?.let {
+                    getScaledBitmap(
+                        it,
+                        photo_ImageView.width,
+                        photo_ImageView.height
+                    )
+                }
+            photo_ImageView.setImageBitmap(bitmap)
+            if (bitmap != null) {
+                saveImage(bitmap)
+                updateRecycleViewColors(bitmap)
+            }
+        }
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            val selectedImageUri = data.data
+            photo_ImageView.setImageURI(selectedImageUri)
+            val bitmap = photo_ImageView.drawable.toBitmap()
+            updateRecycleViewColors(bitmap)
+        }
+    }
+
+    private fun updateRecycleViewColors(bitmap: Bitmap) {
+        extractColorsFromImage(bitmap)
+        generatePalette()
+        updateUI()
+    }
+
+    private fun extractColorsFromImage(bitmap: Bitmap) {
+        val colorBucket = createColorBucket(bitmap)
+        for (i in colorBucket.indices) {
+            colorImageListViewModel.colorList[i] = colorBucket[i]
+        }
+    }
+
+    private fun generatePalette() {
+        val sample = Palette(
+            intArrayOf(
+                colorImageListViewModel.colorList[0].toArgb(),
+                colorImageListViewModel.colorList[1].toArgb(),
+                colorImageListViewModel.colorList[2].toArgb(),
+                colorImageListViewModel.colorList[3].toArgb(),
+                colorImageListViewModel.colorList[4].toArgb()
+            )
+        )
+
+        for (i in colorPaletteListViewModel.colorList.indices) {
+            colorPaletteListViewModel.colorList[i] = sample.generateColor()
+        }
+    }
+
     private fun createColorBucket(bitmap: Bitmap): List<Color> {
-        var colorBucket = mutableMapOf<Int, Int>()
         var colorList = mutableListOf<FloatArray>()
 
         for (x in 0 until bitmap.width) {
             for (y in 0 until bitmap.height) {
                 val color = bitmap.getPixel(x, y)
-                colorBucket.merge(color, 1, Int::plus)
 
                 var hsvColor = FloatArray(3)
                 Color.colorToHSV(color, hsvColor)
@@ -158,62 +211,6 @@ class MainActivity : AppCompatActivity() {
         val colorExtractor = ColorExtractor(colorList, 10, 5)
 
         return colorExtractor.extract()
-        //return colorBucket.toList().sortedBy { (_, value) -> value }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            val imageBitmap =
-                photoFile?.path?.let {
-                    getScaledBitmap(
-                        it,
-                        photo_ImageView.width,
-                        photo_ImageView.height
-                    )
-                }
-            photo_ImageView.setImageBitmap(imageBitmap)
-            if (imageBitmap != null) {
-                saveImage(imageBitmap)
-                getColorsFromImage(imageBitmap)
-                updateUI()
-
-            }
-        }
-
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            val selectedImageUri = data.data
-            photo_ImageView.setImageURI(selectedImageUri)
-            createColorPaletteFromImageView()
-        }
-    }
-
-    private fun createColorPaletteFromImageView() {
-        val bitmap = photo_ImageView.drawable.toBitmap()
-        getColorsFromImage(bitmap)
-        updateUI()
-    }
-    
-    private fun getColorsFromImage(bitmap: Bitmap) {
-        val colorBucket = createColorBucket(bitmap)
-        for (i in colorBucket.indices) {
-            //colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
-            colorImageListViewModel.colorList[i] = colorBucket[i]
-        }
-
-        val sample = Palette(
-            intArrayOf(
-                colorBucket[0].toArgb(),
-                colorBucket[1].toArgb(),
-                colorBucket[2].toArgb(),
-                colorBucket[3].toArgb(),
-                colorBucket[4].toArgb()
-            )
-        )
-
-        for (i in 0..4) {
-            colorPaletteListViewModel.colorList[i] = sample.generateColor()
-        }
     }
 
     private fun saveImage(bitmap: Bitmap) {
