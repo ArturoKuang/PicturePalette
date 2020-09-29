@@ -59,33 +59,48 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        colorPaletteRecyclerView = findViewById(R.id.colorPalette_recycler_view)
-        colorImageRecyclerView = findViewById(R.id.colorImage_recycler_view)
-        cameraButton = findViewById(R.id.camera_button)
-        galleryButton = findViewById(R.id.select_image_button)
-        refreshButton = findViewById(R.id.refresh_button)
-        colorPaletteAdapter = ColorPaletteAdapter(colorPaletteListViewModel.colorList)
-        colorImageAdapter = ColorImageAdapter(colorImageListViewModel.colorList)
 
+        setColorPaletteRecycleView()
+        setColorImageRecycleView()
+        setCameraButton()
+        setGalleryButton()
+        setRefreshButton()
+        requestPermissions()
+    }
+
+    private fun setColorPaletteRecycleView() {
+        colorPaletteRecyclerView = findViewById(R.id.colorPalette_recycler_view)
         colorPaletteRecyclerView.layoutManager = LinearLayoutManager(
             this,
             LinearLayoutManager.HORIZONTAL,
             false
         )
 
+        colorPaletteAdapter = ColorPaletteAdapter(colorPaletteListViewModel.colorList)
+        colorPaletteRecyclerView.adapter = colorPaletteAdapter
+    }
+
+    private fun setColorImageRecycleView() {
+        colorImageRecyclerView = findViewById(R.id.colorImage_recycler_view)
         colorImageRecyclerView.layoutManager = LinearLayoutManager(
             this,
             LinearLayoutManager.HORIZONTAL,
             false
         )
 
-        colorPaletteRecyclerView.adapter = colorPaletteAdapter
+        colorImageAdapter = ColorImageAdapter(colorImageListViewModel.colorList)
         colorImageRecyclerView.adapter = colorImageAdapter
+    }
 
+    private fun setCameraButton() {
+        cameraButton = findViewById(R.id.camera_button)
         cameraButton.setOnClickListener {
             dispatchTakePictureIntent()
         }
+    }
 
+    private fun setGalleryButton() {
+        galleryButton = findViewById(R.id.select_image_button)
         galleryButton.setOnClickListener() {
             val intent = Intent(
                 Intent.ACTION_PICK,
@@ -93,13 +108,14 @@ class MainActivity : AppCompatActivity() {
             )
             startActivityForResult(intent, RESULT_LOAD_IMAGE)
         }
+    }
 
+    private fun setRefreshButton() {
+        refreshButton = findViewById(R.id.refresh_button)
         refreshButton.setOnClickListener() {
             generatePalette()
             updateUI()
         }
-
-        requestPermissions()
     }
 
     private fun dispatchTakePictureIntent() {
