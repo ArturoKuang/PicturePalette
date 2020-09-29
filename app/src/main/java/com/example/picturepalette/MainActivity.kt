@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun createColorBucket(bitmap: Bitmap): List<Pair<Int, Int>> {
+    private fun createColorBucket(bitmap: Bitmap): List<Color> {
         var colorBucket = mutableMapOf<Int, Int>()
         var colorList = mutableListOf<FloatArray>()
 
@@ -156,9 +156,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         val colorExtractor = ColorExtractor(colorList, 10, 5)
-        colorExtractor.extract()
 
-        return colorBucket.toList().sortedBy { (_, value) -> value }
+        return colorExtractor.extract()
+        //return colorBucket.toList().sortedBy { (_, value) -> value }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -196,17 +196,18 @@ class MainActivity : AppCompatActivity() {
     
     private fun getColorsFromImage(bitmap: Bitmap) {
         val colorBucket = createColorBucket(bitmap)
-        for (i in 0..4) {
-            colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
+        for (i in colorBucket.indices) {
+            //colorImageListViewModel.colorList[i] = Color.valueOf(colorBucket[i].first)
+            colorImageListViewModel.colorList[i] = colorBucket[i]
         }
 
         val sample = Palette(
             intArrayOf(
-                colorBucket[0].first,
-                colorBucket[1].first,
-                colorBucket[2].first,
-                colorBucket[3].first,
-                colorBucket[4].first
+                colorBucket[0].toArgb(),
+                colorBucket[1].toArgb(),
+                colorBucket[2].toArgb(),
+                colorBucket[3].toArgb(),
+                colorBucket[4].toArgb()
             )
         )
 

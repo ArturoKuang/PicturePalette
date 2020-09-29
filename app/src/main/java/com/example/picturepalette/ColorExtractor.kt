@@ -5,7 +5,7 @@ import java.util.*
 
 class ColorExtractor(
     private val colors: List<FloatArray>,
-    private val maxIteration: Int,
+    private val maxIterations: Int,
     private val numOfColors: Int
 ) {
 
@@ -120,8 +120,24 @@ class ColorExtractor(
         var lastCluster = mutableMapOf<Centroid, MutableList<FloatArray>>()
         centroids = randomCentroids()
 
+        for(i in 0 until maxIterations) {
+            val isLastIteration = i == maxIterations - 1
+            assignToCluster(clusters)
+            val shouldTerminate = isLastIteration || clusters == lastCluster
+            lastCluster = clusters
+            if(shouldTerminate) {
+                break
+            }
 
+            relocateCentroid(clusters)
+            clusters = mutableMapOf()
+        }
 
-        return listOf(Color())
+        var extractedColors = mutableListOf<Color>()
+        for(cluster in clusters) {
+            val keyColor =  Color.valueOf(Color.HSVToColor(cluster.key.coordinates))
+            extractedColors.add(keyColor)
+        }
+        return extractedColors
     }
 }
