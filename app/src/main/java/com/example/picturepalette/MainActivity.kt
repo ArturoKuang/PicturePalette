@@ -118,14 +118,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            REQUEST_PERMISSION
+        )
+    }
+
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             takePictureIntent.resolveActivity(packageManager)?.also {
                 photoFile = try {
                     createImageFile()
                 } catch (ex: IOException) {
-                    Toast.makeText(this, "PHOTO FILE COULD NOT BE CREATED", Toast.LENGTH_LONG)
-                        .show()
+                    reportTakePictureError()
                     null
                 }
 
@@ -140,6 +146,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun reportTakePictureError() {
+        Toast.makeText(this, "PHOTO FILE COULD NOT BE CREATED", Toast.LENGTH_LONG)
+            .show()
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -175,11 +186,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            val selectedImageUri = data.data
-            photo_ImageView.setImageURI(selectedImageUri)
+            setPhotoImageViewWithUri(data.data)
             val bitmap = photo_ImageView.drawable.toBitmap()
             updateRecycleViewColors(bitmap)
         }
+    }
+
+    private fun setPhotoImageViewWithUri(uri: Uri?) {
+        photo_ImageView.setImageURI(uri)
     }
 
     private fun updateRecycleViewColors(bitmap: Bitmap) {
@@ -217,16 +231,18 @@ class MainActivity : AppCompatActivity() {
         for (x in 0 until bitmap.width) {
             for (y in 0 until bitmap.height) {
                 val color = bitmap.getPixel(x, y)
-
-                var hsvColor = FloatArray(3)
-                Color.colorToHSV(color, hsvColor)
-                colorList.add(hsvColor)
+                addHsvColorToList(color, colorList)
             }
         }
 
         val colorExtractor = ColorExtractor(colorList, 10, 5)
-
         return colorExtractor.extract()
+    }
+
+    private fun addHsvColorToList(color: Int, colorList: MutableList<FloatArray>) {
+        var hsvColor = FloatArray(3)
+        Color.colorToHSV(color, hsvColor)
+        colorList.add(hsvColor)
     }
 
     private fun saveImage(bitmap: Bitmap) {
@@ -273,12 +289,6 @@ class MainActivity : AppCompatActivity() {
         val paletteColors = colorPaletteListViewModel.colorList
         colorPaletteAdapter = ColorPaletteAdapter(paletteColors)
         colorPaletteRecyclerView.adapter = colorPaletteAdapter
-    }
-
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            REQUEST_PERMISSION)
     }
 
     private inner class ColorPaletteAdapter(var colors: List<Color>) :
