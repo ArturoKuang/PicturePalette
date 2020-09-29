@@ -142,12 +142,21 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun createColorBucket(bitmap: Bitmap): List<Pair<Int, Int>> {
         var colorBucket = mutableMapOf<Int, Int>()
+        var colorList = mutableListOf<FloatArray>()
+
         for (x in 0 until bitmap.width) {
             for (y in 0 until bitmap.height) {
                 val color = bitmap.getPixel(x, y)
                 colorBucket.merge(color, 1, Int::plus)
+
+                var hsvColor = FloatArray(3)
+                Color.colorToHSV(color, hsvColor)
+                colorList.add(hsvColor)
             }
         }
+
+        val colorExtractor = ColorExtractor(colorList, 10, 5)
+        colorExtractor.extract()
 
         return colorBucket.toList().sortedBy { (_, value) -> value }
     }
