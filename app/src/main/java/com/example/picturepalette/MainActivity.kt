@@ -24,6 +24,8 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.picturepalette.model.ColorImageListViewModel
+import com.example.picturepalette.model.ColorPaletteListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.IOException

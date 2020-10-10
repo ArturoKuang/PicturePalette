@@ -6,7 +6,7 @@ import java.util.*
 class Palette constructor(
     private val colors: IntArray
 ) {
-    var hsvColors = mutableListOf<FloatArray>()
+    private var hsvColors = mutableListOf<FloatArray>()
     var sampleColors = mutableListOf<Color>()
     private val random = Random()
 
@@ -42,7 +42,6 @@ class Palette constructor(
 
         return Color.valueOf(Color.HSVToColor(colorResult))
     }
-
 
     fun generateColors(numColors: Int): List<Color> {
         var colorsResult = mutableListOf<Color>()

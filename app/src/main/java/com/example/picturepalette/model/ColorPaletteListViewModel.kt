@@ -1,4 +1,4 @@
-package com.example.picturepalette
+package com.example.picturepalette.model
 
 import android.graphics.Color
 import androidx.lifecycle.ViewModel
