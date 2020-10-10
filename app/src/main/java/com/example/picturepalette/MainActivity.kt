@@ -68,18 +68,12 @@ class MainActivity : AppCompatActivity() {
         setGalleryButton()
         setRefreshButton()
         requestPermissions()
-
-        if(savedInstanceState != null) {
-            photoURI = Uri.parse(savedInstanceState.getString(KEY_PHOTO_URI))
-            if(photoURI != null) {
-                photo_ImageView.setImageURI(photoURI)
-            }
-        }
+        restoreImageView(savedInstanceState)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if(photoURI != null) {
+        if (photoURI != null) {
             outState.putString(KEY_PHOTO_URI, photoURI.toString())
         }
     }
@@ -139,6 +133,15 @@ class MainActivity : AppCompatActivity() {
             this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
             REQUEST_PERMISSION
         )
+    }
+
+    private fun restoreImageView(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            photoURI = Uri.parse(savedInstanceState.getString(KEY_PHOTO_URI))
+            if (photoURI != null) {
+                photo_ImageView.setImageURI(photoURI)
+            }
+        }
     }
 
     private fun dispatchTakePictureIntent() {
@@ -306,61 +309,5 @@ class MainActivity : AppCompatActivity() {
         val paletteColors = colorPaletteListViewModel.colorList
         colorPaletteAdapter = ColorPaletteAdapter(paletteColors)
         colorPaletteRecyclerView.adapter = colorPaletteAdapter
-    }
-
-    private inner class ColorPaletteAdapter(var colors: List<Color>) :
-        RecyclerView.Adapter<ColorPaletteHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorPaletteHolder {
-            val view = layoutInflater.inflate(R.layout.color_palette_list_item, parent, false)
-            return ColorPaletteHolder(view)
-        }
-
-        override fun getItemCount(): Int = colors.size
-
-        @RequiresApi(Build.VERSION_CODES.O)
-        override fun onBindViewHolder(holder: ColorPaletteHolder, position: Int) {
-            var color = colors[position]
-            holder.apply {
-                button.setBackgroundColor(color.toArgb())
-                val colorValue = Color.rgb(color.red(), color.green(), color.blue())
-                val colorString = "#" + Integer.toHexString(colorValue)
-                button.text = colorString
-            }
-        }
-    }
-
-    private inner class ColorPaletteHolder(view: View) :
-        RecyclerView.ViewHolder(view) {
-
-        val button: Button = itemView.findViewById(R.id.colorPaletteButton)
-    }
-
-
-    private inner class ColorImageAdapter(var colors: List<Color>) :
-        RecyclerView.Adapter<ColorImageHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorImageHolder {
-            val view = layoutInflater.inflate(R.layout.color_image_list_item, parent, false)
-            return ColorImageHolder(view)
-        }
-
-        override fun getItemCount(): Int = colors.size
-
-        @RequiresApi(Build.VERSION_CODES.O)
-        override fun onBindViewHolder(holder: ColorImageHolder, position: Int) {
-            var color = colors[position]
-            holder.apply {
-                button.setBackgroundColor(color.toArgb())
-                val colorValue = Color.rgb(color.red(), color.green(), color.blue())
-                val colorString = "#" + Integer.toHexString(colorValue)
-                button.text = colorString
-            }
-        }
-    }
-
-    private inner class ColorImageHolder(view: View) :
-        RecyclerView.ViewHolder(view) {
-        val button: Button = itemView.findViewById(R.id.colorImageButton)
     }
 }
