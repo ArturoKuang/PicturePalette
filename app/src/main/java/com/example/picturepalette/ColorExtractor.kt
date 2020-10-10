@@ -16,6 +16,32 @@ class ColorExtractor(
         var coordinates = FloatArray(3)
     }
 
+    fun extract(): List<Color> {
+        var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
+        var lastCluster = mutableMapOf<Centroid, MutableList<FloatArray>>()
+        centroids = randomCentroids()
+
+        for(i in 0 until maxIterations) {
+            val isLastIteration = i == maxIterations - 1
+            assignToCluster(clusters)
+            val shouldTerminate = isLastIteration || clusters == lastCluster
+            lastCluster = clusters
+            if(shouldTerminate) {
+                break
+            }
+
+            relocateCentroid(clusters)
+            clusters = mutableMapOf()
+        }
+
+        var extractedColors = mutableListOf<Color>()
+        for(cluster in clusters) {
+            val keyColor =  Color.valueOf(Color.HSVToColor(cluster.key.coordinates))
+            extractedColors.add(keyColor)
+        }
+        return extractedColors
+    }
+
     private fun randomCentroids(): MutableList<Centroid> {
         val max = colors.maxByOrNull {
             it.sum()
@@ -85,6 +111,15 @@ class ColorExtractor(
         return (b - a) * (b - a)
     }
 
+    private fun relocateCentroid(clusters: MutableMap<Centroid, MutableList<FloatArray>>) {
+        for ((index, value) in centroids.withIndex()) {
+            val newCentroid: Centroid? = average(value, clusters)
+            if (newCentroid != null) {
+                centroids[index] = newCentroid
+            }
+        }
+    }
+
     private fun average(
         centroid: Centroid,
         clusters: MutableMap<Centroid, MutableList<FloatArray>>
@@ -104,40 +139,5 @@ class ColorExtractor(
         val newCentroid = Centroid()
         newCentroid.coordinates = average
         return newCentroid
-    }
-
-    private fun relocateCentroid(clusters: MutableMap<Centroid, MutableList<FloatArray>>) {
-        for ((index, value) in centroids.withIndex()) {
-            val newCentroid: Centroid? = average(value, clusters)
-            if (newCentroid != null) {
-                centroids[index] = newCentroid
-            }
-        }
-    }
-
-    fun extract(): List<Color> {
-        var clusters = mutableMapOf<Centroid, MutableList<FloatArray>>()
-        var lastCluster = mutableMapOf<Centroid, MutableList<FloatArray>>()
-        centroids = randomCentroids()
-
-        for(i in 0 until maxIterations) {
-            val isLastIteration = i == maxIterations - 1
-            assignToCluster(clusters)
-            val shouldTerminate = isLastIteration || clusters == lastCluster
-            lastCluster = clusters
-            if(shouldTerminate) {
-                break
-            }
-
-            relocateCentroid(clusters)
-            clusters = mutableMapOf()
-        }
-
-        var extractedColors = mutableListOf<Color>()
-        for(cluster in clusters) {
-            val keyColor =  Color.valueOf(Color.HSVToColor(cluster.key.coordinates))
-            extractedColors.add(keyColor)
-        }
-        return extractedColors
     }
 }

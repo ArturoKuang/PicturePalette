@@ -11,12 +11,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
@@ -200,7 +196,7 @@ class MainActivity : AppCompatActivity() {
             photo_ImageView.setImageBitmap(bitmap)
             if (bitmap != null) {
                 saveImage(bitmap)
-                updateRecycleViewColors(bitmap)
+                updateColorImageRecycleViewer(bitmap)
             }
         }
 
@@ -208,7 +204,7 @@ class MainActivity : AppCompatActivity() {
             this.photoURI = data.data!!
             setPhotoImageViewWithUri(photoURI)
             val bitmap = photo_ImageView.drawable.toBitmap()
-            updateRecycleViewColors(bitmap)
+            updateColorImageRecycleViewer(bitmap)
         }
     }
 
@@ -216,7 +212,7 @@ class MainActivity : AppCompatActivity() {
         photo_ImageView.setImageURI(uri)
     }
 
-    private fun updateRecycleViewColors(bitmap: Bitmap) {
+    private fun updateColorImageRecycleViewer(bitmap: Bitmap) {
         extractColorsFromImage(bitmap)
         generatePalette()
         updateUI()
